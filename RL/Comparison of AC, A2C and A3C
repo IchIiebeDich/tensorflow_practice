@@ -1,0 +1,27 @@
+AC:
+actor网络和critic（q）网络参数不同，均为双层结构
+  actor:
+    input: states, self.s = tf.placeholder(tf.float32, [1, n_features], "state")
+    output: actions_probability, 激活函数为softmax，维度为number of actions
+    
+    以下训练参数部分暂时存疑： 最大化one-step TD error 和 log(\pi)的乘积
+    with tf.variable_scope('exp_v'):
+        log_prob = tf.log(self.acts_prob[0, self.a]) # log(the chosen probability)括号内的参数是Q网络的输出，动作a对应的概率
+        self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # advantage (TD_error) guided loss ！此处为什么有advantage,那不就是A2C了吗
+
+    with tf.variable_scope('train'):
+        self.train_op = tf.train.AdamOptimizer(lr).minimize(-self.exp_v)  # minimize(-exp_v) = maximize(exp_v)
+  
+  critic:
+    input 与actor基本一致
+    output 输出q值units=1,  # output units，没有激活函数activation=None
+    
+    with tf.variable_scope('squared_TD_error'):
+        self.td_error = self.r + GAMMA * self.q_ - self.q
+        self.loss = tf.square(self.td_error)  # TD_error = (r+gamma*V_next) - V_eval
+    with tf.variable_scope('train'):
+        self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
+  
+  for each episode: 先训练critic，再训练actor：
+    q = critic.learn(s, a,r, s_)  # gradient = grad[r + gamma * V(s_) - V(s)]
+    actor.learn(s, a, q)  # true_gradient = grad[logPi(s,a) * td_error]
