@@ -41,7 +41,7 @@ class Actor(object):
             )
 
         with tf.variable_scope('exp_v'):
-            log_prob = tf.log(self.acts_prob[0, self.a])
+            log_prob = tf.log(self.acts_prob[0, self.a])  # log(the chosen probability)括号内的参数是Q网络的输出，动作a对应的概率
             self.exp_v = tf.reduce_mean(log_prob * self.q)  # advantage (TD_error) guided loss
 
         with tf.variable_scope('train'):
