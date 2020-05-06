@@ -25,3 +25,5 @@ actor网络和critic（q）网络参数不同，均为双层结构
   for each episode: 先训练critic，再训练actor：
     q = critic.learn(s, a,r, s_)  # gradient = grad[r + gamma * V(s_) - V(s)]
     actor.learn(s, a, q)  # true_gradient = grad[logPi(s,a) * td_error]
+    
+ A2C和AC的代码没什么区别，除了把q换成了v
